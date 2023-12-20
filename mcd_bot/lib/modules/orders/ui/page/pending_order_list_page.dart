@@ -12,8 +12,10 @@ class PendingOrderListPage extends StatelessWidget {
     super.key,
   });
 
-  void _onAddOrderPressed(
-      {required BuildContext context, required OrderType orderType}) {
+  void _onAddOrderPressed({
+    required BuildContext context,
+    required OrderType orderType,
+  }) {
     final order = Order.newOrder(type: orderType);
     final pendingOrderListViewModel = context.read<OrderListViewModel>();
     pendingOrderListViewModel.addOrder(order);

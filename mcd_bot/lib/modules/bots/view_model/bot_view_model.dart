@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+
 import 'package:mcd_bot/modules/bots/constant.dart';
 import 'package:mcd_bot/modules/bots/domain/entity/bot.dart';
 import 'package:mcd_bot/modules/bots/domain/service/bot_order_service.dart';
@@ -8,7 +10,6 @@ import 'package:mcd_bot/modules/bots/repository/bot_repository.dart';
 import 'package:mcd_bot/modules/orders/constant.dart';
 import 'package:mcd_bot/modules/orders/ui/view_model/pending_order_list_view_model.dart';
 import 'package:mcd_bot/util/enum/global.dart';
-import 'package:collection/collection.dart';
 
 class BotListViewModel extends ChangeNotifier {
   final BotRepository botRepository;
