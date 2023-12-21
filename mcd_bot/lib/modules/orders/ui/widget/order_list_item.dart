@@ -45,10 +45,7 @@ class _OrderListItemState extends State<OrderListItem> {
   }
 
   void setupTimer() {
-    if (widget.order.status?.isProcessing != true) {
-      checkAndStopTimer();
-      return;
-    }
+    checkAndStopTimer();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final value = calculateRemainingTime();
@@ -57,16 +54,17 @@ class _OrderListItemState extends State<OrderListItem> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _timeTaken = calculateRemainingTime();
-    setupTimer();
-  }
-
-  @override
   void dispose() {
     checkAndStopTimer();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    final value = calculateRemainingTime();
+    setTimeTaken(value: value);
+    setupTimer();
+    super.didChangeDependencies();
   }
 
   @override
