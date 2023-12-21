@@ -22,8 +22,10 @@ class OrderList extends StatelessWidget {
     return ListView.builder(
       itemCount: data.length,
       itemBuilder: (context, index) {
+        final order = data[index];
         return OrderListItem(
-          order: data[index],
+          key: ValueKey(order.id),
+          order: order,
         );
       },
     );
