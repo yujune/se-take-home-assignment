@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mcd_bot/modules/bots/view_model/bot_view_model.dart';
 import 'package:mcd_bot/modules/orders/domain/entity/order.dart';
 import 'package:mcd_bot/modules/orders/ui/widget/oder_badge.dart';
 import 'package:mcd_bot/util/enum/local_date_format.dart';
 import 'package:mcd_bot/util/extension/context.dart';
+import 'package:provider/provider.dart';
 
 class OrderListItem extends StatefulWidget {
   final Order order;
@@ -17,54 +19,32 @@ class OrderListItem extends StatefulWidget {
 }
 
 class _OrderListItemState extends State<OrderListItem> {
-  Timer? _timer;
+  Stream<int>? _stream;
 
-  num _timeTaken = 0;
+  Stream<int>? getBotOrderStream(BuildContext context) {
+    final botViewModel = context.read<BotListViewModel>();
+    final processingOrderMap = botViewModel.processingOrderMap;
 
-  void setTimeTaken({required num value}) {
-    setState(() {
-      _timeTaken = value;
-    });
-  }
-
-  num calculateRemainingTime() {
-    final currentDateTime = DateTime.now();
-
-    final processingDateTime = widget.order.processingDate ?? DateTime.now();
-
-    final elapsedDateTime = currentDateTime.difference(processingDateTime);
-
-    return elapsedDateTime.inSeconds;
-  }
-
-  void checkAndStopTimer() {
-    if (_timer?.isActive == true) {
-      _timer?.cancel();
-      _timer = null;
+    if (processingOrderMap.containsKey(widget.order.processingBy)) {
+      return processingOrderMap[widget.order.processingBy]?.broadcastStream;
     }
+
+    return null;
   }
 
-  void setupTimer() {
-    checkAndStopTimer();
+  int getInitialRemainingTime() {
+    final startProcessingDate = widget.order.processingDate;
+    final currentDate = DateTime.now();
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final value = calculateRemainingTime();
-      setTimeTaken(value: value);
-    });
+    final difference =
+        currentDate.difference(startProcessingDate ?? currentDate);
+    return 10 - difference.inSeconds;
   }
 
   @override
   void dispose() {
-    checkAndStopTimer();
+    _stream = null;
     super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    final value = calculateRemainingTime();
-    setTimeTaken(value: value);
-    setupTimer();
-    super.didChangeDependencies();
   }
 
   @override
@@ -89,7 +69,13 @@ class _OrderListItemState extends State<OrderListItem> {
             style: context.textTheme.labelSmall,
           ),
           if (widget.order.status?.isProcessing == true)
-            Text('Time taken: $_timeTaken'),
+            StreamBuilder<int>(
+              initialData: getInitialRemainingTime(),
+              stream: _stream ??= getBotOrderStream(context),
+              builder: (_, snapshot) => snapshot.data == null
+                  ? const SizedBox.shrink()
+                  : Text('Time taken: ${snapshot.data}'),
+            )
         ],
       ),
       trailing: widget.order.status?.isProcessing == true
